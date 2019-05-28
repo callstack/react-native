@@ -10,6 +10,9 @@ namespace react {
 
 class IndexedRAMBundle : public RAMBundle {
 public:
+  static bool isIndexedRAMBundle(const char* sourcePath);
+  static bool isIndexedRAMBundle(const JSBigString* script);
+
   IndexedRAMBundle(std::string sourcePath, std::string sourceURL);
 
   // For Android IndexedRAMBundle loaded from Assets

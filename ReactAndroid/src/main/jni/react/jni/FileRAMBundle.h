@@ -13,16 +13,14 @@ class FileRAMBundle : public RAMBundle {
    * This implementation reads modules as single file from the assets of an apk.
    */
  public:
+  static bool isFileRAMBundle(AAssetManager* assetManager, const char* assetName);
+
   FileRAMBundle() = default;
   FileRAMBundle(
       AAssetManager* assetManager,
       const std::string& moduleDirectory,
       std::unique_ptr<JSBigString> startupScript);
   ~FileRAMBundle() {}
-
-  static bool isFileRAMBundle(
-      AAssetManager* assetManager,
-      const std::string& assetName);
 
   std::string getSourcePath() const override;
   std::string getSourceURL() const override;

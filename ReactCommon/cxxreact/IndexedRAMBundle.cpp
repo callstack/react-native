@@ -6,6 +6,28 @@
 namespace facebook {
 namespace react {
 
+
+bool IndexedRAMBundle::isIndexedRAMBundle(const char* sourcePath) {
+  std::ifstream bundle_stream(sourcePath, std::ios_base::in);
+  BundleHeader header;
+
+  if (!bundle_stream ||
+      !bundle_stream.read(reinterpret_cast<char *>(&header), sizeof(header))) {
+    return false;
+  }
+
+  return parseTypeFromHeader(header) == BundleType::IndexedRAMBundle;
+}
+
+bool IndexedRAMBundle::isIndexedRAMBundle(const JSBigString* script) {
+  BundleHeader header;
+  std::memcpy(reinterpret_cast<char *>(&header),
+              script->c_str(),
+              sizeof(header));
+
+  return parseTypeFromHeader(header) == BundleType::IndexedRAMBundle;
+}
+
 IndexedRAMBundle::IndexedRAMBundle(std::string sourcePath, std::string sourceURL) {
   bundle_ = std::make_unique<std::ifstream>(
     std::ifstream(sourcePath, std::ifstream::binary));
