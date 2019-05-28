@@ -30,9 +30,9 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
   execEnv = bundleExecutionEnvironments_.back();
   execEnv->jsQueue->runOnQueueSync([this, execEnv, callback]() mutable {
     execEnv->nativeToJsBridge = std::make_unique<NativeToJsBridge>(jsExecutorFactory_,
-                                                                  moduleRegistry_,
-                                                                  execEnv->jsQueue,
-                                                                  callback_);
+                                                                   moduleRegistry_,
+                                                                   execEnv->jsQueue,
+                                                                   callback_);
 
     auto bundle = execEnv->initialBundle.lock();
     if (bundle->getBundleType() == BundleType::FileRAMBundle ||
@@ -41,20 +41,20 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
         = std::dynamic_pointer_cast<const RAMBundle>(bundle);
       // TODO: check if ramBundle is not empty or throw exception
 
-      auto getModuleLambda = folly::Optional<std::function<RAMBundle::Module(uint32_t)>>(
-        [ramBundle](uint32_t moduleId) {
-          return ramBundle->getModule(moduleId);
-        });
-      execEnv->nativeToJsBridge->
-        setupEnvironmentSync([](std::string p, bool n) {}, // TODO: provide actual impl
-                             getModuleLambda);
+      LoadBundleLambda loadBundle = [](std::string p, bool n) {}; // TODO: provide actual impl
+      auto getModule = folly::Optional<GetModuleLambda>([ramBundle](uint32_t moduleId) {
+        return ramBundle->getModule(moduleId);
+      });
       
-       // TODO: figure out if we can get away from copying
+      // TODO: figure out if we can get away from copying
       std::unique_ptr<const JSBigString> startupScript = std::make_unique<const JSBigStdString>(
         std::string(ramBundle->getStartupScript()->c_str()));
-      execEnv->nativeToJsBridge->
-        loadScriptSync(std::move(startupScript),
-                       ramBundle->getSourceURL());
+      
+      evalInitialBundle(std::move(execEnv),
+                        std::move(startupScript),
+                        ramBundle->getSourceURL(),
+                        loadBundle,
+                        getModule);
     } else {
       std::shared_ptr<const BasicBundle> basicBundle
         = std::dynamic_pointer_cast<const BasicBundle>(bundle);
@@ -68,13 +68,23 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
   });
 }
 
+void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironment> execEnv,
+                                       std::unique_ptr<const JSBigString> startupScript,
+                                       std::string sourceURL,
+                                       LoadBundleLambda loadBundle,
+                                       folly::Optional<GetModuleLambda> getModule) {
+  execEnv->nativeToJsBridge->setupEnvironmentSync(loadBundle, getModule);
+  execEnv->nativeToJsBridge->loadScriptSync(std::move(startupScript),
+                                            sourceURL);
+}
+
 void BundleRegistry::disposeExecutionEnvironments() {
   for (auto execEnv : bundleExecutionEnvironments_) {
     execEnv->nativeToJsBridge->destroy();
   }
 }
 
-std::weak_ptr<BundleRegistry::BundleExecutionEnvironment> BundleRegistry::getFirstExecutionEnvironemnt() {
+std::weak_ptr<BundleRegistry::BundleExecutionEnvironment> BundleRegistry::getFirstExecutionEnvironment() {
   if (bundleExecutionEnvironments_.size() == 0) {
     throw std::runtime_error("Cannot get first BundleExecutionEnvironment");
   }
@@ -82,7 +92,7 @@ std::weak_ptr<BundleRegistry::BundleExecutionEnvironment> BundleRegistry::getFir
   return std::weak_ptr<BundleExecutionEnvironment>(bundleExecutionEnvironments_[0]);
 }
 
-bool BundleRegistry::hasExecutionEnvironemnt() {
+bool BundleRegistry::hasExecutionEnvironment() {
   return bundleExecutionEnvironments_.size() > 0;
 }
 
