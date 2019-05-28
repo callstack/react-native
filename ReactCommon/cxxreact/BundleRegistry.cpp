@@ -39,28 +39,31 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
         bundle->getBundleType() == BundleType::IndexedRAMBundle) {
       std::shared_ptr<const RAMBundle> ramBundle
         = std::dynamic_pointer_cast<const RAMBundle>(bundle);
-      // TODO: check if ramBundle is not empty or throw exception
+      if (!ramBundle) {
+        throw std::runtime_error("Cannot cast Bundle to RAMBundle");
+      }
 
-      LoadBundleLambda loadBundle = [](std::string p, bool n) {}; // TODO: provide actual impl
       auto getModule = folly::Optional<GetModuleLambda>([ramBundle](uint32_t moduleId) {
         return ramBundle->getModule(moduleId);
       });
       
-      // TODO: figure out if we can get away from copying
-      std::unique_ptr<const JSBigString> startupScript = std::make_unique<const JSBigStdString>(
-        std::string(ramBundle->getStartupScript()->c_str()));
-      
       evalInitialBundle(std::move(execEnv),
-                        std::move(startupScript),
+                        ramBundle->getStartupScript(),
                         ramBundle->getSourceURL(),
-                        loadBundle,
+                        makeLoadBundleLambda(),
                         getModule);
     } else {
       std::shared_ptr<const BasicBundle> basicBundle
         = std::dynamic_pointer_cast<const BasicBundle>(bundle);
-      // TODO: check if ramBundle is not empty or throw exception
+      if (!basicBundle) {
+        throw std::runtime_error("Cannot cast Bundle to BasicBundle");
+      }
 
-      // TODO: setupEnvironment + loadScript
+      evalInitialBundle(std::move(execEnv),
+                        basicBundle->getScript(),
+                        basicBundle->getSourceURL(),
+                        makeLoadBundleLambda(),
+                        folly::Optional<GetModuleLambda>());
     }
 
     execEnv->valid = true;
@@ -76,6 +79,13 @@ void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironmen
   execEnv->nativeToJsBridge->setupEnvironmentSync(loadBundle, getModule);
   execEnv->nativeToJsBridge->loadScriptSync(std::move(startupScript),
                                             sourceURL);
+}
+
+BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda() {
+  return [](std::string bundlePath, bool inCurrentEnvironment) {
+    // TODO: provide actual implementation
+    throw std::runtime_error("loadBundle is not implemented yet");
+  };
 }
 
 void BundleRegistry::disposeExecutionEnvironments() {

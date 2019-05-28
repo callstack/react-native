@@ -57,6 +57,8 @@ class BundleRegistry {
                            std::string sourceURL,
                            LoadBundleLambda loadBundle,
                            folly::Optional<GetModuleLambda> getModule);
+
+    LoadBundleLambda makeLoadBundleLambda(/* take pointer to BEE or initial Bundle */);
 };
 
 } // react

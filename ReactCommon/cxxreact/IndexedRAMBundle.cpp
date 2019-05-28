@@ -80,8 +80,12 @@ IndexedRAMBundle::Module IndexedRAMBundle::getModule(uint32_t moduleId) const {
   return ret;
 }
 
-std::shared_ptr<const JSBigString> IndexedRAMBundle::getStartupScript() const {
-  return startupScript_;
+std::unique_ptr<const JSBigString> IndexedRAMBundle::getStartupScript() const {
+  // It might be used multiple times, so we don't want to move it, but instead copy it.
+  std::unique_ptr<JSBigBufferString> script =
+    std::make_unique<JSBigBufferString>(startupScript_->size());
+  std::memcpy(script->data(), startupScript_->c_str(), startupScript_->size());
+  return std::move(script);
 }
 
 std::string IndexedRAMBundle::getModuleCode(const uint32_t id) const {

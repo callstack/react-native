@@ -61,8 +61,12 @@ FileRAMBundle::FileRAMBundle(
       moduleDirectory_(moduleDirectory),
       startupScript_(std::move(startupScript)) {}
 
-std::shared_ptr<const JSBigString> FileRAMBundle::getStartupScript() const {
-  return startupScript_;
+std::unique_ptr<const JSBigString> FileRAMBundle::getStartupScript() const {
+  // It might be used multiple times, so we don't want to move it, but instead copy it.
+  std::unique_ptr<JSBigBufferString> script =
+    std::make_unique<JSBigBufferString>(startupScript_->size());
+  std::memcpy(script->data(), startupScript_->c_str(), startupScript_->size());
+  return std::move(script);
 }
 
 std::string FileRAMBundle::getSourcePath() const {
