@@ -47,7 +47,7 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
         return ramBundle->getModule(moduleId);
       });
       
-      evalInitialBundle(std::move(execEnv),
+      evalInitialBundle(execEnv,
                         ramBundle->getStartupScript(),
                         ramBundle->getSourceURL(),
                         makeLoadBundleLambda(),
@@ -59,7 +59,7 @@ void BundleRegistry::runNewExecutionEnvironment(std::unique_ptr<const Bundle> in
         throw std::runtime_error("Cannot cast Bundle to BasicBundle");
       }
 
-      evalInitialBundle(std::move(execEnv),
+      evalInitialBundle(execEnv,
                         basicBundle->getScript(),
                         basicBundle->getSourceURL(),
                         makeLoadBundleLambda(),
