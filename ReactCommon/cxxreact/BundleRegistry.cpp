@@ -24,7 +24,7 @@ void BundleRegistry::preloadEnvironment(std::string environmentId, std::function
       folly::to<std::string>("Environment with id = ", environmentId, " already exists")
     );
   }
-  std::shared_ptr<BundleEnvironment> execEnv = std::make_shared<BundleEnvironment>();
+  std::shared_ptr<BundleExecutionEnvironment> execEnv = std::make_shared<BundleExecutionEnvironment>();
   execEnv->valid = false;
   execEnv->jsQueue = jsQueueFactory_();
   execEnv->initialBundle = std::weak_ptr<const Bundle>();
@@ -42,7 +42,7 @@ void BundleRegistry::preloadEnvironment(std::string environmentId, std::function
 
 void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
                                                std::unique_ptr<const Bundle> initialBundle) {
-  std::shared_ptr<BundleEnvironment> execEnv = getEnvironment(environmentId).lock();
+  std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
   bundles_.push_back(std::move(initialBundle));
   execEnv->initialBundle = std::weak_ptr<const Bundle>(bundles_.back());
 
@@ -83,7 +83,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
   });
 }
 
-void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleEnvironment> execEnv,
+void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironment> execEnv,
                                        std::unique_ptr<const JSBigString> startupScript,
                                        std::string sourceURL,
                                        LoadBundleLambda loadBundle,
@@ -106,14 +106,14 @@ void BundleRegistry::disposeEnvironments() {
   }
 }
 
-std::weak_ptr<BundleRegistry::BundleEnvironment> BundleRegistry::getEnvironment(std::string environmentId) {
+std::weak_ptr<BundleRegistry::BundleExecutionEnvironment> BundleRegistry::getEnvironment(std::string environmentId) {
   if (!hasEnvironment(environmentId)) {
     throw std::runtime_error(
       folly::to<std::string>("Cannot get environment with id = ", environmentId)
     );
   }
 
-  return std::weak_ptr<BundleEnvironment>(bundleEnvironments_[environmentId]);
+  return std::weak_ptr<BundleExecutionEnvironment>(bundleEnvironments_[environmentId]);
 }
 
 bool BundleRegistry::hasEnvironment(std::string environmentId) {
