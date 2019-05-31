@@ -5,6 +5,7 @@
 #include "RAMBundle.h"
 #include "BasicBundle.h"
 #include "MessageQueueThread.h"
+#include "BundleLoader.h"
 
 namespace facebook {
 namespace react {
@@ -33,7 +34,9 @@ class BundleRegistry {
     ~BundleRegistry();
 
     void preloadEnvironment(std::string environmentId, std::function<void()> callback);
-    void runInPreloadedEnvironment(std::string environmentId, std::unique_ptr<const Bundle> initialBundle);
+    void runInPreloadedEnvironment(std::string environmentId,
+                                   std::string initialBundleURL,
+                                   std::unique_ptr<BundleLoader> bundleLoader);
     void disposeEnvironments();
 
     std::weak_ptr<BundleExecutionEnvironment> getEnvironment(std::string environmentId);
@@ -46,6 +49,7 @@ class BundleRegistry {
     std::shared_ptr<ModuleRegistry> moduleRegistry_;
     std::shared_ptr<InstanceCallback> callback_;
     std::function<std::shared_ptr<MessageQueueThread>()> jsQueueFactory_;
+    std::unique_ptr<BundleLoader> bundleLoader_;
 
     /**
      * Setup environment and load initial bundle. Should be called only once
@@ -57,7 +61,7 @@ class BundleRegistry {
                            LoadBundleLambda loadBundle,
                            folly::Optional<GetModuleLambda> getModule);
 
-    LoadBundleLambda makeLoadBundleLambda(/* take pointer to BEE or initial Bundle */);
+    LoadBundleLambda makeLoadBundleLambda(std::string environmentId);
 };
 
 } // react

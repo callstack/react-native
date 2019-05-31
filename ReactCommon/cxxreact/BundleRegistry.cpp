@@ -41,12 +41,15 @@ void BundleRegistry::preloadEnvironment(std::string environmentId, std::function
 }
 
 void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
-                                               std::unique_ptr<const Bundle> initialBundle) {
+                                               std::string initialBundleURL,
+                                               std::unique_ptr<BundleLoader> bundleLoader) {
+  bundleLoader_ = std::move(bundleLoader);
+  auto initialBundle = bundleLoader_->getBundle(initialBundleURL);
   std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
   bundles_.push_back(std::move(initialBundle));
   execEnv->initialBundle = std::weak_ptr<const Bundle>(bundles_.back());
 
-  execEnv->jsQueue->runOnQueueSync([this, execEnv]() mutable {
+  execEnv->jsQueue->runOnQueueSync([this, execEnv, environmentId]() mutable {
     auto bundle = execEnv->initialBundle.lock();
     if (bundle->getBundleType() == BundleType::FileRAMBundle ||
         bundle->getBundleType() == BundleType::IndexedRAMBundle) {
@@ -63,7 +66,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
       evalInitialBundle(execEnv,
                         ramBundle->getStartupScript(),
                         ramBundle->getSourceURL(),
-                        makeLoadBundleLambda(),
+                        makeLoadBundleLambda(environmentId),
                         getModule);
     } else {
       std::shared_ptr<const BasicBundle> basicBundle
@@ -75,7 +78,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
       evalInitialBundle(execEnv,
                         basicBundle->getScript(),
                         basicBundle->getSourceURL(),
-                        makeLoadBundleLambda(),
+                        makeLoadBundleLambda(environmentId),
                         folly::Optional<GetModuleLambda>());
     }
 
@@ -93,8 +96,13 @@ void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironmen
                                             sourceURL);
 }
 
-BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda() {
-  return [](std::string bundlePath, bool inCurrentEnvironment) {
+BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda(std::string environmentId) {
+  return [this, environmentId](std::string bundlePath, bool inCurrentEnvironment) mutable {
+    if (bundlePath.empty()) {}
+    // eg: bundlePath=base-dll
+    // actual file: assets://base-dll.android.bundle
+    // load it
+    // and call this.bundleRegistryOnLoad(bundlePath);
     // TODO: provide actual implementation
     throw std::runtime_error("loadBundle is not implemented yet");
   };
