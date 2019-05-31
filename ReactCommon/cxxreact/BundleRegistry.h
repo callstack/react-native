@@ -15,8 +15,8 @@ class ModuleRegistry;
 
 class BundleRegistry {
   public:
-    using LoadBundleLambda = std::function<void(std::string bundlePath, bool inCurrentEnvironment)>;
-    using GetModuleLambda = std::function<RAMBundle::Module(uint32_t moduleId)>;
+    using LoadBundleLambda = std::function<void(std::string bundleName, bool inCurrentEnvironment)>;
+    using GetModuleLambda = std::function<RAMBundle::Module(uint32_t moduleId, std::string bundleName)>;
 
     struct BundleExecutionEnvironment {
       std::shared_ptr<MessageQueueThread> jsQueue;
@@ -62,6 +62,7 @@ class BundleRegistry {
                            folly::Optional<GetModuleLambda> getModule);
 
     LoadBundleLambda makeLoadBundleLambda(std::string environmentId);
+    GetModuleLambda makeGetModuleLambda();
 };
 
 } // react

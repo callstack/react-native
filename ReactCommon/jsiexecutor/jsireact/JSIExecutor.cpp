@@ -70,7 +70,7 @@ JSIExecutor::JSIExecutor(
 }
 
 void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBundle,
-                                   folly::Optional<std::function<RAMBundle::Module(uint32_t)>> getModule) {
+                                   folly::Optional<std::function<RAMBundle::Module(uint32_t, std::string)>> getModule) {
   SystraceSection s("JSIExecutor::setupEnvironment");
 
   runtime_->global().setProperty(
@@ -126,9 +126,9 @@ void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBu
           throw std::invalid_argument("Got wrong number of args");
         }
 
-        std::string bundlePath = args[0].getString(*runtime_).utf8(*runtime_);
+        std::string bundleName = args[0].getString(*runtime_).utf8(*runtime_);
         bool inCurrentEnvironment = args[1].getBool();
-        loadBundle(bundlePath, inCurrentEnvironment);
+        loadBundle(bundleName, inCurrentEnvironment);
 
         return facebook::jsi::Value();
       }));
@@ -152,8 +152,10 @@ void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBu
 
           // NOTE: for backward compatibility we accent 2 arguments
           // but only use the first one.
+          // TODO: support localId, segmentId
           uint32_t moduleId = folly::to<uint32_t>(args[0].getNumber());
-          auto module = (*getModule)(moduleId);
+          std::string bundleName = args[1].getString(*runtime_).utf8(*runtime_);
+          auto module = (*getModule)(moduleId, bundleName);
 
           runtime_->evaluateJavaScript(
               std::make_unique<StringBuffer>(module.code), module.name);

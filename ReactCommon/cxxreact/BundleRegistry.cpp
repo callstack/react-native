@@ -59,9 +59,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
         throw std::runtime_error("Cannot cast Bundle to RAMBundle");
       }
 
-      auto getModule = folly::Optional<GetModuleLambda>([ramBundle](uint32_t moduleId) {
-        return ramBundle->getModule(moduleId);
-      });
+      auto getModule = folly::Optional<GetModuleLambda>(makeGetModuleLambda());
       
       evalInitialBundle(execEnv,
                         ramBundle->getStartupScript(),
@@ -96,15 +94,56 @@ void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironmen
                                             sourceURL);
 }
 
+BundleRegistry::GetModuleLambda BundleRegistry::makeGetModuleLambda() {
+  return [this](uint32_t moduleId, std::string bundleName) {
+    std::string sourceURL(bundleName + ".android.bundle");
+    std::shared_ptr<const RAMBundle> ramBundle;
+    for (auto bundle : bundles_) {
+      if (bundle->getSourceURL() == sourceURL) {
+        ramBundle = std::dynamic_pointer_cast<const RAMBundle>(bundle);
+        break;
+      }
+    }
+
+    if (!ramBundle) {
+      throw std::runtime_error("Cannot find RAM bundle" + sourceURL);
+    }
+
+    return ramBundle->getModule(moduleId);
+  };
+}
+
 BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda(std::string environmentId) {
-  return [this, environmentId](std::string bundlePath, bool inCurrentEnvironment) mutable {
-    if (bundlePath.empty()) {}
-    // eg: bundlePath=base-dll
-    // actual file: assets://base-dll.android.bundle
-    // load it
-    // and call this.bundleRegistryOnLoad(bundlePath);
-    // TODO: provide actual implementation
-    throw std::runtime_error("loadBundle is not implemented yet");
+  return [this, environmentId](std::string bundleName, bool inCurrentEnvironment) mutable {
+    std::string assetURL("assets://" + bundleName + ".android.bundle");
+    // TODO: refactor to avoid code duplication
+    std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
+    execEnv->jsQueue->runOnQueueSync([this, assetURL, execEnv]() mutable {
+      std::unique_ptr<const Bundle> additionalBundle = bundleLoader_->getBundle(assetURL);
+      bundles_.push_back(std::move(additionalBundle));
+      std::shared_ptr<const Bundle> bundle = bundles_.back();
+
+      if (bundle->getBundleType() == BundleType::FileRAMBundle ||
+          bundle->getBundleType() == BundleType::IndexedRAMBundle) {
+        std::shared_ptr<const RAMBundle> ramBundle
+          = std::dynamic_pointer_cast<const RAMBundle>(bundle);
+        if (!ramBundle) {
+          throw std::runtime_error("Cannot cast Bundle to RAMBundle");
+        }
+        
+        execEnv->nativeToJsBridge->loadScriptSync(ramBundle->getStartupScript(),
+                                                  ramBundle->getSourceURL());
+      } else {
+        std::shared_ptr<const BasicBundle> basicBundle
+          = std::dynamic_pointer_cast<const BasicBundle>(bundle);
+        if (!basicBundle) {
+          throw std::runtime_error("Cannot cast Bundle to BasicBundle");
+        }
+
+        execEnv->nativeToJsBridge->loadScriptSync(basicBundle->getScript(),
+                                                  basicBundle->getSourceURL());
+      }
+    });
   };
 }
 
