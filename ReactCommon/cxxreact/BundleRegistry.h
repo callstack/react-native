@@ -59,7 +59,7 @@ class BundleRegistry {
                            std::unique_ptr<const JSBigString> startupScript,
                            std::string sourceURL,
                            LoadBundleLambda loadBundle,
-                           folly::Optional<GetModuleLambda> getModule);
+                           GetModuleLambda getModule);
 
     LoadBundleLambda makeLoadBundleLambda(std::string environmentId);
     GetModuleLambda makeGetModuleLambda();

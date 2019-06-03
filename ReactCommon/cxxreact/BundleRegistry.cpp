@@ -51,6 +51,9 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
 
   execEnv->jsQueue->runOnQueueSync([this, execEnv, environmentId]() mutable {
     auto bundle = execEnv->initialBundle.lock();
+    GetModuleLambda getModule = makeGetModuleLambda();
+    LoadBundleLambda loadBundle = makeLoadBundleLambda(environmentId);
+
     if (bundle->getBundleType() == BundleType::FileRAMBundle ||
         bundle->getBundleType() == BundleType::IndexedRAMBundle) {
       std::shared_ptr<const RAMBundle> ramBundle
@@ -58,13 +61,11 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
       if (!ramBundle) {
         throw std::runtime_error("Cannot cast Bundle to RAMBundle");
       }
-
-      auto getModule = folly::Optional<GetModuleLambda>(makeGetModuleLambda());
       
       evalInitialBundle(execEnv,
                         ramBundle->getStartupScript(),
                         ramBundle->getSourceURL(),
-                        makeLoadBundleLambda(environmentId),
+                        loadBundle,
                         getModule);
     } else {
       std::shared_ptr<const BasicBundle> basicBundle
@@ -76,8 +77,8 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
       evalInitialBundle(execEnv,
                         basicBundle->getScript(),
                         basicBundle->getSourceURL(),
-                        makeLoadBundleLambda(environmentId),
-                        folly::Optional<GetModuleLambda>());
+                        loadBundle,
+                        getModule);
     }
 
     execEnv->valid = true;
@@ -88,7 +89,10 @@ void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironmen
                                        std::unique_ptr<const JSBigString> startupScript,
                                        std::string sourceURL,
                                        LoadBundleLambda loadBundle,
-                                       folly::Optional<GetModuleLambda> getModule) {
+                                       GetModuleLambda getModule) {
+  // `nativeRequire`, which uses `getModule` must be always set on global
+  // in `JSExecutor`, since even if the initial bundle is not RAM, we don't
+  // know the format of other bundles.
   execEnv->nativeToJsBridge->setupEnvironmentSync(loadBundle, getModule);
   execEnv->nativeToJsBridge->loadScriptSync(std::move(startupScript),
                                             sourceURL);

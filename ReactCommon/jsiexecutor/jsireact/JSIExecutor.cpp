@@ -70,7 +70,7 @@ JSIExecutor::JSIExecutor(
 }
 
 void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBundle,
-                                   folly::Optional<std::function<RAMBundle::Module(uint32_t, std::string)>> getModule) {
+                                   std::function<RAMBundle::Module(uint32_t, std::string)> getModule) {
   SystraceSection s("JSIExecutor::setupEnvironment");
 
   runtime_->global().setProperty(
@@ -133,35 +133,32 @@ void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBu
         return facebook::jsi::Value();
       }));
   
-  if (getModule) {
-    // Setup nativeRequire since it's running a RAM bundle.
-    runtime_->global().setProperty(
+  runtime_->global().setProperty(
+    *runtime_,
+    "nativeRequire",
+    Function::createFromHostFunction(
       *runtime_,
-      "nativeRequire",
-      Function::createFromHostFunction(
-        *runtime_,
-        PropNameID::forAscii(*runtime_, "nativeRequire"),
-        2,
-        [this, getModule](Runtime& rt,
-               const facebook::jsi::Value&,
-               const facebook::jsi::Value* args,
-               size_t count) {
-          if (count == 0 || count > 2) {
-            throw std::invalid_argument("Got wrong number of args");
-          }
+      PropNameID::forAscii(*runtime_, "nativeRequire"),
+      2,
+      [this, getModule](Runtime& rt,
+              const facebook::jsi::Value&,
+              const facebook::jsi::Value* args,
+              size_t count) {
+        if (count == 0 || count > 2) {
+          throw std::invalid_argument("Got wrong number of args");
+        }
 
-          // NOTE: for backward compatibility we accent 2 arguments
-          // but only use the first one.
-          // TODO: support localId, segmentId
-          uint32_t moduleId = folly::to<uint32_t>(args[0].getNumber());
-          std::string bundleName = args[1].getString(*runtime_).utf8(*runtime_);
-          auto module = (*getModule)(moduleId, bundleName);
+        // NOTE: for backward compatibility we accent 2 arguments
+        // but only use the first one.
+        // TODO: support localId, segmentId
+        uint32_t moduleId = folly::to<uint32_t>(args[0].getNumber());
+        std::string bundleName = args[1].getString(*runtime_).utf8(*runtime_);
+        auto module = getModule(moduleId, bundleName);
 
-          runtime_->evaluateJavaScript(
-              std::make_unique<StringBuffer>(module.code), module.name);
-          return facebook::jsi::Value();
-        }));
-  }
+        runtime_->evaluateJavaScript(
+            std::make_unique<StringBuffer>(module.code), module.name);
+        return facebook::jsi::Value();
+      }));
 
   if (logger_) {
     // Only inject the logging function if it was supplied by the caller.
