@@ -122,25 +122,35 @@ std::unique_ptr<const JSBigString> BundleRegistry::getScriptFromBundle(std::shar
 
 BundleRegistry::GetModuleLambda BundleRegistry::makeGetModuleLambda() {
   return [this](uint32_t moduleId, std::string bundleName) {
-    std::string sourceURL(bundleName + ".android.bundle");
-    std::shared_ptr<const RAMBundle> ramBundle;
+    // TODO: get rid of this
+    std::string sourcePath(bundleName + ".android.bundle");
+    std::shared_ptr<const RAMBundle> targetBundle;
+    // TODO: store bundles in a map where bundle name is the key for
+    // easier lookup
     for (auto bundle : bundles_) {
-      if (bundle->getSourceURL() == sourceURL) {
-        ramBundle = std::dynamic_pointer_cast<const RAMBundle>(bundle);
-        break;
+      if (bundle->getBundleType() == BundleType::IndexedRAMBundle ||
+          bundle->getBundleType() == BundleType::FileRAMBundle) {
+        std::shared_ptr<const RAMBundle> ramBundle =
+          std::dynamic_pointer_cast<const RAMBundle>(bundle);
+        if (ramBundle->getSourcePath() == sourcePath) {
+          targetBundle = ramBundle;
+          break;
+        }
       }
     }
 
-    if (!ramBundle) {
-      throw std::runtime_error("Cannot find RAM bundle" + sourceURL);
+    if (!targetBundle) {
+      throw std::runtime_error("Cannot find RAM bundle " + sourcePath);
     }
 
-    return ramBundle->getModule(moduleId);
+    return targetBundle->getModule(moduleId);
   };
 }
 
 BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda(std::string environmentId) {
   return [this, environmentId](std::string bundleName, bool inCurrentEnvironment) mutable {
+    // TODO: move it to instance of `BundleLoader` (eg: `AssetBundleLoader`)
+    // and make `Bundleloader` to accept bundle name not a assetURL/fileURL.
     std::string assetURL("assets://" + bundleName + ".android.bundle");
     std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
     execEnv->jsQueue->runOnQueueSync([this, assetURL, execEnv]() mutable {

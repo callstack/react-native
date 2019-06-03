@@ -56,6 +56,10 @@ class RN_EXPORT Bundle {
     Bundle& operator=(const Bundle&) = delete;
     virtual ~Bundle() {};
 
+    /**
+     * URL with filename from where the source code is comming from.
+     * Use it for stack traces.
+     */
     virtual std::string getSourceURL() const = 0;
     virtual BundleType getBundleType() const = 0;
 };
