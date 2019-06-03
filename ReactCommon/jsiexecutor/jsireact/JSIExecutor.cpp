@@ -148,11 +148,16 @@ void JSIExecutor::setupEnvironment(std::function<void(std::string, bool)> loadBu
           throw std::invalid_argument("Got wrong number of args");
         }
 
-        // NOTE: for backward compatibility we accent 2 arguments
-        // but only use the first one.
-        // TODO: support localId, segmentId
         uint32_t moduleId = folly::to<uint32_t>(args[0].getNumber());
-        std::string bundleName = args[1].getString(*runtime_).utf8(*runtime_);
+        std::string bundleName;
+        if (args[1].isString()) {
+          bundleName = args[1].getString(*runtime_).utf8(*runtime_);
+        } else if (args[1].isNumber()) {
+          auto segmentId = folly::to<uint32_t>(args[1].getNumber());
+          bundleName = std::string("seg-" + std::to_string(segmentId));
+        } else {
+          throw std::invalid_argument("nativeRequire 2nd argument must be a string or a number");
+        }
         auto module = getModule(moduleId, bundleName);
 
         runtime_->evaluateJavaScript(
