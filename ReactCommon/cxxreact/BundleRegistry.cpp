@@ -65,7 +65,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
   });
 }
 
-void BundleRegistry::runOnDebugger(std::string environmentId, std::string sourceURL) {
+void BundleRegistry::runInRemoteDebugger(std::string environmentId, std::string sourceURL) {
   std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
   execEnv->nativeToJsBridge->loadScript(nullptr, sourceURL);
   
