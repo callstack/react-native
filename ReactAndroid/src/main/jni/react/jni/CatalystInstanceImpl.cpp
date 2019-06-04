@@ -170,7 +170,6 @@ void CatalystInstanceImpl::extendNativeModules(
 }
 
 void CatalystInstanceImpl::jniSetSourceURL(const std::string& sourceURL) {
-  // TODO: figure out what to do with it
   instance_->runApplicationOnDebugger(sourceURL);
 }
 
