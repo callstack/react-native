@@ -46,7 +46,7 @@ public:
   void runApplication(std::string initialBundleURL,
                       std::unique_ptr<BundleLoader> bundleLoader,
                       bool loadSynchronously);
-  void runApplicationOnDebugger(std::string sourceURL);
+  void runApplicationInRemoteDebugger(std::string sourceURL);
 
   bool supportsProfiling();
   void setGlobalVariable(std::string propName,
