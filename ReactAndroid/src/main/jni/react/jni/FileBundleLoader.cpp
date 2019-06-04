@@ -7,7 +7,9 @@ namespace facebook {
 namespace react {
 
   std::unique_ptr<const Bundle> FileBundleLoader::getBundle(std::string bundleURL) const {
-    bundlesPath_ = bundleURL.substr(0, bundleURL.find_last_of("/") + 1);
+    if(bundlesPath_.empty()) {
+      bundlesPath_ = bundleURL.substr(0, bundleURL.find_last_of("/") + 1);
+    }
     if (IndexedRAMBundle::isIndexedRAMBundle(bundleURL.c_str())) {
       return std::make_unique<IndexedRAMBundle>(bundleURL, bundlesPath_);
     } else {
