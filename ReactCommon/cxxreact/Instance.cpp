@@ -83,7 +83,7 @@ void Instance::runApplication(std::string initialBundleURL,
   }
 }
 
-void Instance::runApplicationOnDebugger(std::string sourceURL) {
+void Instance::runApplicationInRemoteDebugger(std::string sourceURL) {
   callback_->incrementPendingJSCalls();
   SystraceSection s("Instance::runApplicationOnDebugger", "sourceURL", sourceURL);
   bundleRegistry_->runInRemoteDebugger(defaultEnvironmentId_, sourceURL);
