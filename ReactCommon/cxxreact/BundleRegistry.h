@@ -44,7 +44,8 @@ class BundleRegistry {
      */
     void runInPreloadedEnvironment(std::string environmentId,
                                    std::string initialBundleURL,
-                                   std::unique_ptr<BundleLoader> bundleLoader);
+                                   std::unique_ptr<BundleLoader> bundleLoader,
+                                   bool sync);
     /**
      * Run initial bundle on debugger serviceWorker.
      */
@@ -82,7 +83,8 @@ class BundleRegistry {
                            std::unique_ptr<const JSBigString> startupScript,
                            std::string sourceURL,
                            LoadBundleLambda loadBundle,
-                           GetModuleLambda getModule);
+                           GetModuleLambda getModule,
+                           bool sync);
     /**
      * Check bundle types and extract script from bundle for evaluation.
      * For BasicBundle it will be a whole bundle JS code and for RAM - only a startup code.
