@@ -73,7 +73,7 @@ void BundleRegistry::runInPreloadedEnvironment(std::string environmentId,
 
 void BundleRegistry::runInRemoteDebugger(std::string environmentId, std::string sourceURL) {
   std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
-  execEnv->nativeToJsBridge->loadScript(nullptr, sourceURL, [](){});
+  execEnv->nativeToJsBridge->loadScript(nullptr, sourceURL, nullptr);
   
 }
 
@@ -113,7 +113,7 @@ void BundleRegistry::evalInitialBundle(std::shared_ptr<BundleExecutionEnvironmen
   } else {
     execEnv->nativeToJsBridge->loadScript(std::move(startupScript),
                                           sourceURL,
-                                          [](){});
+                                          nullptr);
   }
 }
 

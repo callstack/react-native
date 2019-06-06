@@ -112,10 +112,14 @@ void NativeToJsBridge::loadScript(std::unique_ptr<const JSBigString> script,
                       sourceURL=std::move(sourceURL)](JSExecutor* executor) mutable {
     try {
       m_executor->loadScript(std::move(script.move()), std::move(sourceURL));
-      callback();
+      if (callback) {
+        callback();
+      }
     } catch (...) {
       m_applicationScriptHasFailure = true;
-      callback();
+      if (callback) {
+        callback();
+      }
       throw;
     }
   });
