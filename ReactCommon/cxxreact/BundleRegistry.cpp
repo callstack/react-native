@@ -171,27 +171,33 @@ BundleRegistry::GetModuleLambda BundleRegistry::makeGetModuleLambda(std::string 
   };
 }
 
+void BundleRegistry::loadAdditionalBundle(std::string environmentId,
+                                          std::string bundleName,
+                                          bool sync) {
+  std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
+  std::string bundleURL = bundleLoader_->getBundleURLFromName(bundleName);
+  std::unique_ptr<const Bundle> additionalBundle = bundleLoader_->getBundle(bundleURL);
+  bundles_[bundleURL] = std::move(additionalBundle);
+  std::shared_ptr<const Bundle> bundle = bundles_[bundleURL];
+  std::unique_ptr<const JSBigString> script = getScriptFromBundle(bundle);
+
+  if (sync) {
+    execEnv->nativeToJsBridge->loadScriptSync(std::move(script),
+                                              bundle->getSourceURL());
+  } else {
+    execEnv->nativeToJsBridge->loadScript(std::move(script),
+                                          bundle->getSourceURL(),
+                                          [execEnv, bundleName]() {
+      execEnv->nativeToJsBridge->callFunction("BundleRegistry",
+                                              "bundleRegistryOnLoad",
+                                              folly::dynamic::array(bundleName));
+    });
+  }
+}
+
 BundleRegistry::LoadBundleLambda BundleRegistry::makeLoadBundleLambda(std::string environmentId) {
   return [this, environmentId](std::string bundleName, bool sync, bool inCurrentEnvironment) mutable {
-    std::shared_ptr<BundleExecutionEnvironment> execEnv = getEnvironment(environmentId).lock();
-    std::string bundleURL = bundleLoader_->getBundleURLFromName(bundleName);
-    std::unique_ptr<const Bundle> additionalBundle = bundleLoader_->getBundle(bundleURL);
-    bundles_[bundleURL] = std::move(additionalBundle);
-    std::shared_ptr<const Bundle> bundle = bundles_[bundleURL];
-    std::unique_ptr<const JSBigString> script = getScriptFromBundle(bundle);
-
-    if (sync) {
-      execEnv->nativeToJsBridge->loadScriptSync(std::move(script),
-                                                bundle->getSourceURL());
-    } else {
-      execEnv->nativeToJsBridge->loadScript(std::move(script),
-                                            bundle->getSourceURL(),
-                                            [execEnv, bundleName]() {
-        execEnv->nativeToJsBridge->callFunction("BundleRegistry",
-                                                "bundleRegistryOnLoad",
-                                                folly::dynamic::array(bundleName));
-      });
-    }
+    loadAdditionalBundle(environmentId, bundleName, sync);
   };
 }
 
