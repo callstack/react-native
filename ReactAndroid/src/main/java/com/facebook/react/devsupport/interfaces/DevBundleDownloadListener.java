@@ -13,7 +13,7 @@ import com.facebook.react.devsupport.DevBundlesContainer;
 import javax.annotation.Nullable;
 
 public interface DevBundleDownloadListener {
-  void onSuccess(DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient);
+  void onSuccess(String sourceURL, DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient);
   void onProgress(@Nullable String status, @Nullable Integer done, @Nullable Integer total);
   void onFailure(Exception cause);
 }

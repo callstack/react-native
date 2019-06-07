@@ -17,8 +17,6 @@ class FileBundleLoader : public BundleLoader {
     std::unique_ptr<const Bundle> getBundle(std::string bundleURL) const override;
     std::string getBundleURLFromName(std::string bundleName) const override;
 
-    std::string getFileURLFromName(std::string bundleName);
-
   private:
     std::unique_ptr<JDevBundlesContainer> bundlesContainer_;
     mutable std::string bundlesPath_;

@@ -181,11 +181,11 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
 }
 
 void CatalystInstanceImpl::jniLoadScriptFromFile(
+    const std::string& sourceURL,
     jni::alias_ref<JavaDevBundlesContainer::javaobject> bundlesContainer,
     bool loadSynchronously) {
   std::unique_ptr<FileBundleLoader> bundleLoader = std::make_unique<FileBundleLoader>(bundlesContainer);
-  std::string fileURL = bundleLoader->getBundleURLFromName("index");
-  instance_->runApplication(fileURL, std::move(bundleLoader), loadSynchronously);
+  instance_->runApplication(sourceURL, std::move(bundleLoader), loadSynchronously);
 }
 
 void CatalystInstanceImpl::jniLoadScriptFromDeltaBundle(

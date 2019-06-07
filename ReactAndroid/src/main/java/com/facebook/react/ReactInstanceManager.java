@@ -169,6 +169,7 @@ public class ReactInstanceManager {
   private final @Nullable JSIModulePackage mJSIModulePackage;
   private List<ViewManager> mViewManagers;
   private DevBundlesContainer mDevBundlesContainer;
+  private String mSourceURL;
 
   private class ReactContextInitParams {
     private final JavaScriptExecutorFactory mJsExecutorFactory;
@@ -284,9 +285,10 @@ public class ReactInstanceManager {
       }
 
       @Override
-      public void onJSBundleLoadedFromServer(DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient) {
+      public void onJSBundleLoadedFromServer(String sourceURL, DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient) {
         mDevBundlesContainer = bundlesContainer;
-        ReactInstanceManager.this.onJSBundleLoadedFromServer(bundlesContainer, nativeDeltaClient);
+        mSourceURL = sourceURL;
+        ReactInstanceManager.this.onJSBundleLoadedFromServer(sourceURL, bundlesContainer, nativeDeltaClient);
       }
 
       @Override
@@ -373,7 +375,7 @@ public class ReactInstanceManager {
           !devSettings.isRemoteJSDebugEnabled()) {
         // If there is a up-to-date bundle downloaded from server,
         // with remote JS debugging disabled, always use that.
-        onJSBundleLoadedFromServer(mDevBundlesContainer, null);
+        onJSBundleLoadedFromServer(mSourceURL, mDevBundlesContainer, null);
         return;
       }
 
@@ -877,11 +879,11 @@ public class ReactInstanceManager {
   }
 
   @ThreadConfined(UI)
-  private void onJSBundleLoadedFromServer(DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient) {
+  private void onJSBundleLoadedFromServer(String sourceURL, DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient) {
     Log.d(ReactConstants.TAG, "ReactInstanceManager.onJSBundleLoadedFromServer()");
 
     JSBundleLoader bundleLoader = nativeDeltaClient == null
-        ? JSBundleLoader.createCachedBundleFromNetworkLoader(bundlesContainer)
+        ? JSBundleLoader.createCachedBundleFromNetworkLoader(sourceURL, bundlesContainer)
         : JSBundleLoader.createDeltaFromNetworkLoader(
             mDevSupportManager.getSourceUrl(), nativeDeltaClient);
 

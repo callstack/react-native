@@ -29,9 +29,5 @@ namespace react {
     return bundlesContainer_->getSourceURLByName(bundleName);
   }
 
-  std::string FileBundleLoader::getFileURLFromName(std::string bundleName) {
-    return bundlesContainer_->getFileURLByName(bundleName);
-  }
-
 } // namespace react
 } // namespace facebook

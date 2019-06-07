@@ -215,9 +215,9 @@ public class CatalystInstanceImpl implements CatalystInstance {
   }
 
   @Override
-  public void loadScriptFromFile(DevBundlesContainer bundlesContainer, boolean loadSynchronously) {
-    mSourceURL = bundlesContainer.getSourceURLByName("index");
-    jniLoadScriptFromFile(bundlesContainer, loadSynchronously);
+  public void loadScriptFromFile(String sourceURL, DevBundlesContainer bundlesContainer, boolean loadSynchronously) {
+    mSourceURL = sourceURL;
+    jniLoadScriptFromFile(sourceURL, bundlesContainer, loadSynchronously);
   }
 
   @Override
@@ -231,7 +231,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
   private native void jniSetSourceURL(String sourceURL);
   private native void jniLoadScriptFromAssets(AssetManager assetManager, String assetURL, boolean loadSynchronously);
-  private native void jniLoadScriptFromFile(DevBundlesContainer bundlesContainer, boolean loadSynchronously);
+  private native void jniLoadScriptFromFile(String sourceURL, DevBundlesContainer bundlesContainer, boolean loadSynchronously);
   private native void jniLoadScriptFromDeltaBundle(String sourceURL, NativeDeltaClient deltaClient, boolean loadSynchronously);
 
   @Override

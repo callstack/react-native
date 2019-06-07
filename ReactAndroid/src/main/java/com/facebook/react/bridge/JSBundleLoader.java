@@ -39,19 +39,19 @@ public abstract class JSBundleLoader {
    * This loader loads bundle from file system. The bundle will be read in native code to save on
    * passing large strings from java to native memory.
    */
-  public static JSBundleLoader createFileLoader(DevBundlesContainer bundlesContainer) {
-    return createFileLoader(bundlesContainer, false);
+  public static JSBundleLoader createFileLoader(String fileName, DevBundlesContainer bundlesContainer) {
+    return createFileLoader(fileName, bundlesContainer, false);
   }
 
   public static JSBundleLoader createFileLoader(
+      String fileName,
       DevBundlesContainer bundlesContainer,
       final boolean loadSynchronously) {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
-        delegate.loadScriptFromFile(bundlesContainer, loadSynchronously);
-        // TODO check why we need return it 
-        return "fileName";
+        delegate.loadScriptFromFile(fileName, bundlesContainer, loadSynchronously);
+        return fileName;
       }
     };
   }
@@ -63,13 +63,13 @@ public abstract class JSBundleLoader {
    * Providing correct {@param sourceURL} of downloaded bundle is required for JS stacktraces to
    * work correctly and allows for source maps to correctly symbolize those.
    */
-  public static JSBundleLoader createCachedBundleFromNetworkLoader(DevBundlesContainer bundlesContainer) {
+  public static JSBundleLoader createCachedBundleFromNetworkLoader(String sourceURL, DevBundlesContainer bundlesContainer) {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
         try {
-          delegate.loadScriptFromFile(bundlesContainer, false);
-          return "sourceURL";
+          delegate.loadScriptFromFile(sourceURL, bundlesContainer, false);
+          return sourceURL;
         } catch (Exception e) {
           throw DebugServerException.makeGeneric(e.getMessage(), e);
         }

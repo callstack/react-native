@@ -64,7 +64,7 @@ class CatalystInstanceImpl : public jni::HybridClass<CatalystInstanceImpl> {
   void jniSetSourceURL(const std::string& sourceURL);
 
   void jniLoadScriptFromAssets(jni::alias_ref<JAssetManager::javaobject> assetManager, const std::string& assetURL, bool loadSynchronously);
-  void jniLoadScriptFromFile(jni::alias_ref<JavaDevBundlesContainer::javaobject> bundlesContainer, bool loadSynchronously);
+  void jniLoadScriptFromFile(const std::string& sourceURL, jni::alias_ref<JavaDevBundlesContainer::javaobject> bundlesContainer, bool loadSynchronously);
   void jniLoadScriptFromDeltaBundle(const std::string& sourceURL, jni::alias_ref<NativeDeltaClient::jhybridobject> deltaClient, bool loadSynchronously);
   void jniCallJSFunction(std::string module, std::string method, NativeArray* arguments);
   void jniCallJSCallback(jint callbackId, NativeArray* arguments);

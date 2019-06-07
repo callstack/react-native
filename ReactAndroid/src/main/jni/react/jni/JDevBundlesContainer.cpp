@@ -12,7 +12,7 @@ namespace facebook {
 namespace react {
 
 JDevBundlesContainer::JDevBundlesContainer(alias_ref<JavaDevBundlesContainer::javaobject> jobj) :
-    m_jobj(make_local(jobj)) {
+    m_jobj(make_global(jobj)) {
 }
 
   std::string JDevBundlesContainer::getSourceURLByName(std::string name) {

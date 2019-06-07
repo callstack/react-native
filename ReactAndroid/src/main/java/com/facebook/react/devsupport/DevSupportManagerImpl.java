@@ -961,6 +961,7 @@ public class DevSupportManagerImpl implements
         new DevBundleDownloadListener() {
           @Override
           public void onSuccess(
+              final String sourceURL,
               final DevBundlesContainer bundlesContainer,
               final @Nullable NativeDeltaClient nativeDeltaClient) {
             mDevLoadingViewController.hide();
@@ -970,14 +971,14 @@ public class DevSupportManagerImpl implements
               mBundleStatus.updateTimestamp = System.currentTimeMillis();
             }
             if (mBundleDownloadListener != null) {
-              mBundleDownloadListener.onSuccess(bundlesContainer, nativeDeltaClient);
+              mBundleDownloadListener.onSuccess(sourceURL, bundlesContainer, nativeDeltaClient);
             }
             UiThreadUtil.runOnUiThread(
                 new Runnable() {
                   @Override
                   public void run() {
                     ReactMarker.logMarker(ReactMarkerConstants.DOWNLOAD_END, bundleInfo.toJSONString());
-                    mReactInstanceManagerHelper.onJSBundleLoadedFromServer(bundlesContainer, nativeDeltaClient);
+                    mReactInstanceManagerHelper.onJSBundleLoadedFromServer(sourceURL, bundlesContainer, nativeDeltaClient);
                   }
                 });
           }

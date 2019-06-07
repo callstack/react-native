@@ -106,8 +106,9 @@ public class ReactInstanceManagerBuilder {
       return this;
     }
     DevBundlesContainer bundlesContainer = new DevBundlesContainer();
+    // TODO use regex to get bundleName
     bundlesContainer.pushBundle("index", jsBundleFile, jsBundleFile);
-    return setJSBundleLoader(JSBundleLoader.createFileLoader(bundlesContainer));
+    return setJSBundleLoader(JSBundleLoader.createFileLoader(jsBundleFile, bundlesContainer));
   }
 
   /**

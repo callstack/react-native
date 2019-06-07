@@ -36,7 +36,7 @@ public:
   }
 
 private:
-  local_ref<JavaDevBundlesContainer::javaobject> m_jobj;
+  global_ref<JavaDevBundlesContainer::javaobject> m_jobj;
 };
 
 }

@@ -27,10 +27,11 @@ public interface JSBundleLoaderDelegate {
   /**
    * Load a JS bundle from the filesystem.
    * See {@link JSBundleLoader#createFileLoader(String)} and {@link JSBundleLoader#createCachedBundleFromNetworkLoader(String, String)}
+   * @param sourceULR
    * @param bundlesContainer
    * @param loadSynchronously
    */
-  void loadScriptFromFile(DevBundlesContainer bundlesContainer, boolean loadSynchronously);
+  void loadScriptFromFile(String sourceURL, DevBundlesContainer bundlesContainer, boolean loadSynchronously);
 
   /**
    * Load a delta bundle from Metro.
