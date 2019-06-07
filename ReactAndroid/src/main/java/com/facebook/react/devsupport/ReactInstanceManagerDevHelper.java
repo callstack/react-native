@@ -27,7 +27,7 @@ public interface ReactInstanceManagerDevHelper {
   /**
    * Notify react instance manager about new JS bundle version downloaded from the server.
    */
-  void onJSBundleLoadedFromServer(@Nullable NativeDeltaClient nativeDeltaClient);
+  void onJSBundleLoadedFromServer(DevBundlesContainer bundlesContainer, @Nullable NativeDeltaClient nativeDeltaClient);
 
   /**
    * Request to toggle the react element inspector.

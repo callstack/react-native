@@ -46,6 +46,8 @@ public class BundleDownloader {
 
   private @Nullable Call mDownloadBundleFromURLCall;
 
+  private @Nullable DevBundlesContainer mDevBundlesContainer;
+
   public static class BundleInfo {
     private @Nullable String mDeltaClientName;
     private @Nullable String mUrl;
@@ -121,6 +123,7 @@ public class BundleDownloader {
       final BundleDeltaClient.ClientType clientType,
       Request.Builder requestBuilder) {
 
+    mDevBundlesContainer = new DevBundlesContainer();
     final Request request =
         requestBuilder
             .url(formatBundleUrl(bundleURL, clientType))
@@ -320,13 +323,14 @@ public class BundleDownloader {
     }
 
     if (bundleWritten) {
+       mDevBundlesContainer.pushBundle("index", url, outputFile.getPath());
       // If we have received a new bundle from the server, move it to its final destination.
       if (!tmpFile.renameTo(outputFile)) {
         throw new IOException("Couldn't rename " + tmpFile + " to " + outputFile);
       }
     }
 
-    callback.onSuccess(nativeDeltaClient);
+    callback.onSuccess(mDevBundlesContainer, nativeDeltaClient);
   }
 
   private BundleDeltaClient getBundleDeltaClient(BundleDeltaClient.ClientType clientType) {

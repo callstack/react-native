@@ -9,6 +9,7 @@ package com.facebook.react.bridge;
 
 import android.content.Context;
 import com.facebook.react.common.DebugServerException;
+import com.facebook.react.devsupport.DevBundlesContainer;
 
 /**
  * A class that stores JS bundle information and allows a {@link JSBundleLoaderDelegate}
@@ -38,19 +39,19 @@ public abstract class JSBundleLoader {
    * This loader loads bundle from file system. The bundle will be read in native code to save on
    * passing large strings from java to native memory.
    */
-  public static JSBundleLoader createFileLoader(final String fileName) {
-    return createFileLoader(fileName, fileName, false);
+  public static JSBundleLoader createFileLoader(DevBundlesContainer bundlesContainer) {
+    return createFileLoader(bundlesContainer, false);
   }
 
   public static JSBundleLoader createFileLoader(
-      final String fileName,
-      final String assetUrl,
+      DevBundlesContainer bundlesContainer,
       final boolean loadSynchronously) {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
-        delegate.loadScriptFromFile(fileName, assetUrl, loadSynchronously);
-        return fileName;
+        delegate.loadScriptFromFile(bundlesContainer, loadSynchronously);
+        // TODO check why we need return it 
+        return "fileName";
       }
     };
   }
@@ -62,15 +63,13 @@ public abstract class JSBundleLoader {
    * Providing correct {@param sourceURL} of downloaded bundle is required for JS stacktraces to
    * work correctly and allows for source maps to correctly symbolize those.
    */
-  public static JSBundleLoader createCachedBundleFromNetworkLoader(
-      final String sourceURL,
-      final String cachedFileLocation) {
+  public static JSBundleLoader createCachedBundleFromNetworkLoader(DevBundlesContainer bundlesContainer) {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
         try {
-          delegate.loadScriptFromFile(cachedFileLocation, sourceURL, false);
-          return sourceURL;
+          delegate.loadScriptFromFile(bundlesContainer, false);
+          return "sourceURL";
         } catch (Exception e) {
           throw DebugServerException.makeGeneric(e.getMessage(), e);
         }

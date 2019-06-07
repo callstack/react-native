@@ -9,6 +9,7 @@ package com.facebook.react.bridge;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import com.facebook.react.devsupport.DevBundlesContainer;
 
 /**
  * An interface for classes that initialize JavaScript using {@link JSBundleLoader}
@@ -26,11 +27,10 @@ public interface JSBundleLoaderDelegate {
   /**
    * Load a JS bundle from the filesystem.
    * See {@link JSBundleLoader#createFileLoader(String)} and {@link JSBundleLoader#createCachedBundleFromNetworkLoader(String, String)}
-   * @param fileName
-   * @param sourceURL
+   * @param bundlesContainer
    * @param loadSynchronously
    */
-  void loadScriptFromFile(String fileName, String sourceURL, boolean loadSynchronously);
+  void loadScriptFromFile(DevBundlesContainer bundlesContainer, boolean loadSynchronously);
 
   /**
    * Load a delta bundle from Metro.
