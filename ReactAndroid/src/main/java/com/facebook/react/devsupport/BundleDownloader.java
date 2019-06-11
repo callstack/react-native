@@ -384,7 +384,7 @@ public class BundleDownloader {
       buffer.writeUtf8(jsonString);
       BufferedSource source = Okio.buffer((Source) buffer);
       source.readAll(fileSink);
-    } catch(Throwable aa) {
+    } catch(Throwable e) {
       throw new IOException("Couldn't save to " + outputFile);
     } finally {
       if (fileSink != null) {
