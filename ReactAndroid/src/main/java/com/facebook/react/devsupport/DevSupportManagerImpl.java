@@ -51,6 +51,10 @@ import com.facebook.react.devsupport.interfaces.StackFrame;
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
 import com.facebook.react.packagerconnection.RequestHandler;
 import com.facebook.react.packagerconnection.Responder;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -67,6 +71,9 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.internal.io.FileSystem;
+import okio.BufferedSource;
+import okio.Okio;
 
 /**
  * Interface for accessing and interacting with development features. Following features
@@ -102,6 +109,7 @@ public class DevSupportManagerImpl implements
   private static final int JAVA_ERROR_COOKIE = -1;
   private static final int JSEXCEPTION_ERROR_COOKIE = -1;
   private static final String JS_BUNDLE_FILE_NAME = "ReactNativeDevBundle.js";
+  private static final String JS_BUNDLE_CONTAINER_FILE_NAME = "ReactNativeDevBundlesContainer.json";
   private static final String RELOAD_APP_ACTION_SUFFIX = ".RELOAD_APP_ACTION";
 
   private enum ErrorType {
@@ -126,6 +134,7 @@ public class DevSupportManagerImpl implements
   private final ReactInstanceManagerDevHelper mReactInstanceManagerHelper;
   private final @Nullable String mJSAppBundleName;
   private final File mJSBundleTempFile;
+  private final File mDevBundleContainerTempFile;
   private final DefaultNativeModuleCallExceptionHandler mDefaultNativeModuleCallExceptionHandler;
   private final DevLoadingViewController mDevLoadingViewController;
 
@@ -259,6 +268,8 @@ public class DevSupportManagerImpl implements
     // file. As this should only be the case in dev mode we leave it as it is.
     // TODO(6418010): Fix readers-writers problem in debug reload from HTTP server
     mJSBundleTempFile = new File(applicationContext.getFilesDir(), JS_BUNDLE_FILE_NAME);
+    mDevBundleContainerTempFile = new File(applicationContext.getFilesDir(), JS_BUNDLE_CONTAINER_FILE_NAME);
+
 
     mDefaultNativeModuleCallExceptionHandler = new DefaultNativeModuleCallExceptionHandler();
 
@@ -687,6 +698,21 @@ public class DevSupportManagerImpl implements
     return false;
   }
 
+  @Override
+  public DevBundlesContainer getBundlesContainerFromCache() {
+    if (mDevBundleContainerTempFile.exists()) {
+      try {
+        final BufferedSource source = Okio.buffer(FileSystem.SYSTEM.source(mDevBundleContainerTempFile));
+        return new DevBundlesContainer(new JSONObject(source.readUtf8()));
+      } catch (IOException e) {
+        FLog.e(ReactConstants.TAG, "DevSupport is unable to read bundles container");
+      } catch (JSONException e) {
+        FLog.e(ReactConstants.TAG, "DevSupport is unable to parse bundles container");
+      }
+    }
+    return null;
+  }
+
   /**
    * @return {@code true} if JS bundle {@param bundleAssetName} exists, in that case
    * {@link com.facebook.react.ReactInstanceManager} should use that file from assets instead of
@@ -1019,6 +1045,7 @@ public class DevSupportManagerImpl implements
           }
         },
         mJSBundleTempFile,
+        mDevBundleContainerTempFile,
         bundleURL,
         bundleInfo);
   }

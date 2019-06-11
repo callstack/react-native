@@ -14,6 +14,7 @@ import java.io.File;
 import com.facebook.react.bridge.NativeModuleCallExceptionHandler;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.devsupport.DevBundlesContainer;
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
 
 /**
@@ -40,6 +41,7 @@ public interface DevSupportManager extends NativeModuleCallExceptionHandler {
   String getSourceUrl();
   String getJSBundleURLForRemoteDebugging();
   String getDownloadedJSBundleFile();
+  DevBundlesContainer getBundlesContainerFromCache();
   boolean hasUpToDateJSBundleInCache();
   void reloadSettings();
   void handleReloadJS();

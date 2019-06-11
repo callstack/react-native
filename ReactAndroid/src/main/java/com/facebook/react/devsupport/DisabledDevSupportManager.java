@@ -124,6 +124,11 @@ public class DisabledDevSupportManager implements DevSupportManager {
   }
 
   @Override
+  public DevBundlesContainer getBundlesContainerFromCache() {
+    return null;
+  }
+
+  @Override
   public void reloadSettings() {
 
   }
