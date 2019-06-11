@@ -7,6 +7,9 @@
 
 package com.facebook.react.devsupport;
 
+import com.facebook.common.logging.FLog;
+import com.facebook.react.common.ReactConstants;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +38,7 @@ public class DevBundlesContainer {
         this.sourceURL = json.getString(SOURCE_URL_KEY);
         this.fileURL = json.getString(FILE_URL_KEY);
       } catch (Throwable e) {
-      // TODO
+        FLog.e(ReactConstants.TAG, "BundleURLs is unable to create from JSON");
       }
     }
 
@@ -48,7 +51,7 @@ public class DevBundlesContainer {
         json.put(FILE_URL_KEY, fileURL);
         json.put(SOURCE_URL_KEY, sourceURL);
       } catch (JSONException e) {
-        // TODO
+        FLog.e(ReactConstants.TAG, "BundleURLs is unable to be parsed to JSON");
       }
       return json;
     }
@@ -116,7 +119,7 @@ public class DevBundlesContainer {
       }
       jsonContainer.put(BUNDLES_NAME_MAPPING_KEY, jsonNameMapping);
     } catch (JSONException e) {
-      // TODO
+      FLog.e(ReactConstants.TAG, "DevBundlesContainer is unable to be parsed to JSON");
     }
     return jsonContainer;
   }
@@ -130,7 +133,7 @@ public class DevBundlesContainer {
         bundleNameMapping.put(key, new BundleURLs(bundles.getJSONObject(key)));
       }
     } catch (Throwable e) {
-      // TODO
+      FLog.e(ReactConstants.TAG, "DevBundlesContainer is unable to create from JSON");
     }
   }
 }
