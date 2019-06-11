@@ -17,7 +17,7 @@ import org.json.JSONObject;
 public class DevBundlesContainer {
 
   private String SOURCE_URL_KEY = "sourceURL";
-  private String FILE_URL_KEY = "sourceURL";
+  private String FILE_URL_KEY = "fileURL";
   private String INITIAL_SOURCE_URL_KEY = "initialSourceURL";
   private String BUNDLES_NAME_MAPPING_KEY = "bundleNameMapping";
 
