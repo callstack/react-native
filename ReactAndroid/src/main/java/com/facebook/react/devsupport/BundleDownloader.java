@@ -523,7 +523,7 @@ public class BundleDownloader {
       }
     }
     // TODO discuss about name of header
-    String restBundlesHeader = headers.get("x-bundles-meta");
+    String restBundlesHeader = headers.get("X-multi-bundle");
     String[] restBundles = restBundlesHeader != null ? restBundlesHeader.split(",") : null;
     callback.onSuccess(url, nativeDeltaClient, restBundles);
   }
